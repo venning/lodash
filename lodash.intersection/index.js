@@ -1,5 +1,5 @@
 /**
- * lodash 3.0.1 (Custom Build) <https://lodash.com/>
+ * lodash 3.0.2 (Custom Build) <https://lodash.com/>
  * Build: `lodash modern modularize exports="npm" -o ./`
  * Copyright 2012-2015 The Dojo Foundation <http://dojofoundation.org/>
  * Based on Underscore.js 1.8.2 <http://underscorejs.org/LICENSE>
@@ -55,11 +55,11 @@ function intersection() {
   outer:
   while (++index < length) {
     value = array[index];
-    if ((seen ? cacheIndexOf(seen, value) : indexOf(result, value)) < 0) {
+    if ((seen ? cacheIndexOf(seen, value) : indexOf(result, value, 0)) < 0) {
       argsIndex = argsLength;
       while (--argsIndex) {
         var cache = caches[argsIndex];
-        if ((cache ? cacheIndexOf(cache, value) : indexOf(args[argsIndex], value)) < 0) {
+        if ((cache ? cacheIndexOf(cache, value) : indexOf(args[argsIndex], value, 0)) < 0) {
           continue outer;
         }
       }
