@@ -1,5 +1,5 @@
 /**
- * lodash 3.4.0 (Custom Build) <https://lodash.com/>
+ * lodash 3.4.1 (Custom Build) <https://lodash.com/>
  * Build: `lodash modern modularize exports="npm" -o ./`
  * Copyright 2012-2015 The Dojo Foundation <http://dojofoundation.org/>
  * Based on Underscore.js 1.8.2 <http://underscorejs.org/LICENSE>
@@ -36,9 +36,8 @@ function compareMultiple(object, other, orders) {
     if (result) {
       if (index >= ordersLength) {
         return result;
-      } else {
-        return orders[index] ? result : result * -1;
       }
+      return result * (orders[index] ? 1 : -1);
     }
   }
   // Fixes an `Array#sort` bug in the JS engine embedded in Adobe applications
