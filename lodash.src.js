@@ -11018,14 +11018,8 @@
      * @example
      *
      * var users = [
-<<<<<<< HEAD
-     *   { 'user': 'barney',  'age': 36 },
-     *   { 'user': 'fred',    'age': 40 },
-     *   { 'user': 'pebbles', 'age': 1 }
-=======
      *   { 'user': 'barney' },
      *   { 'user': 'fred' }
->>>>>>> upstream/master
      * ];
      *
      * _.find(users, _.matchesProperty('user', 'fred'));
