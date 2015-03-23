@@ -4195,18 +4195,29 @@
   QUnit.module('lodash.escapeRegExp');
 
   (function() {
-    var escaped = '\\.\\*\\+\\?\\^\\$\\{\\}\\(\\)\\|\\[\\]\\/\\\\',
-        unescaped = '.*+?^${}()|[\]\/\\';
-
-    escaped += escaped;
-    unescaped += unescaped;
-
     test('should escape values', 1, function() {
+      var escaped = '\\.\\*\\+\\?\\^\\$\\{\\}\\(\\)\\|\\[\\]\\/\\\\',
+          unescaped = '.*+?^${}()|[\]\/\\';
+
+      escaped += escaped;
+      unescaped += unescaped;
+
       strictEqual(_.escapeRegExp(unescaped), escaped);
     });
 
     test('should handle strings with nothing to escape', 1, function() {
       strictEqual(_.escapeRegExp('abc'), 'abc');
+    });
+
+    test('should work with `eval` and `Function`', 2, function() {
+      var string = '[lodash](https://lodash.com/)',
+          escaped = _.escapeRegExp(string),
+          regexp = eval('(/' + escaped + '/)');
+
+      ok(regexp.test(string));
+
+      regexp = Function('return /' + escaped + '/')();
+      ok(regexp.test(string));
     });
   }());
 
@@ -9467,10 +9478,39 @@
       deepEqual(actual, expected);
 
       matches = _.matches({ 'a': { 'c': undefined } });
-      objects = [{ 'a': { 'b': 1 } }, { 'a':{ 'b':1, 'c': 1 } }, { 'a': { 'b': 1, 'c': undefined } }];
+      objects = [{ 'a': { 'b': 1 } }, { 'a': { 'b':1, 'c': 1 } }, { 'a': { 'b': 1, 'c': undefined } }];
       actual = _.map(objects, matches);
 
       deepEqual(actual, expected);
+    });
+
+    test('should match inherited `value` properties', 1, function() {
+      function Foo() { this.a = 1; }
+      Foo.prototype.b = 2;
+
+      var object = { 'a': new Foo },
+          matches = _.matches({ 'a': { 'b': 2 } });
+
+      strictEqual(matches(object), true);
+    });
+
+    test('should match properties when `value` is a function', 1, function() {
+      function Foo() {}
+      Foo.a = function() {};
+      Foo.a.b = 1;
+      Foo.a.c = 2;
+
+      var matches = _.matches({ 'a': { 'b': 1 } });
+      strictEqual(matches(Foo), true);
+    });
+
+    test('should match properties when `value` is not a plain object', 1, function() {
+      function Foo(object) { _.assign(this, object); }
+
+      var object = new Foo({ 'a': new Foo({ 'b': 1, 'c': 2 }) }),
+          matches = _.matches({ 'a': { 'b': 1 } });
+
+      strictEqual(matches(object), true);
     });
 
     test('should not match by inherited `source` properties', 1, function() {
@@ -9623,7 +9663,7 @@
           objects = [{ 'a': 1 }, { 'a': 1, 'b': 1 }, { 'a': 1, 'b': undefined }],
           actual = _.map(objects, matches);
 
-      deepEqual(actual, [true, false, true]);
+      deepEqual(actual, [false, false, true]);
 
       matches = _.matchesProperty('a', { 'b': undefined });
       objects = [{ 'a': { 'a': 1 } }, { 'a': { 'a': 1, 'b': 1 } }, { 'a': { 'a': 1, 'b': undefined } }];
@@ -9632,7 +9672,36 @@
       deepEqual(actual, [false, false, true]);
     });
 
-    test('should not match by inherited `value` properties', 1, function() {
+    test('should match inherited `value` properties', 1, function() {
+      function Foo() { this.a = 1; }
+      Foo.prototype.b = 2;
+
+      var object = { 'a': new Foo },
+          matches = _.matchesProperty('a', { 'b': 2 });
+
+      strictEqual(matches(object), true);
+    });
+
+    test('should match properties when `value` is a function', 1, function() {
+      function Foo() {}
+      Foo.a = function() {};
+      Foo.a.b = 1;
+      Foo.a.c = 2;
+
+      var matches = _.matchesProperty('a', { 'b': 1 });
+      strictEqual(matches(Foo), true);
+    });
+
+    test('should match properties when `value` is not a plain object', 1, function() {
+      function Foo(object) { _.assign(this, object); }
+
+      var object = new Foo({ 'a': new Foo({ 'b': 1, 'c': 2 }) }),
+          matches = _.matchesProperty('a', { 'b': 1 });
+
+      strictEqual(matches(object), true);
+    });
+
+    test('should not match inherited `source` properties', 1, function() {
       function Foo() { this.a = 1; }
       Foo.prototype.b = 2;
 
@@ -12518,6 +12587,14 @@
     test('should use an empty array when `start` is not reached', 1, function() {
       var rp = _.restParam(fn);
       deepEqual(rp(1), [1, undefined, []]);
+    });
+
+    test('should work on functions with more than 3 params', 1, function() {
+      var rp = _.restParam(function(a, b, c, d) {
+        return slice.call(arguments);
+      });
+
+      deepEqual(rp(1, 2, 3, 4, 5), [1, 2, 3, [4, 5]]);
     });
 
     test('should not set a `this` binding', 1, function() {
